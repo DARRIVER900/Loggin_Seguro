@@ -160,6 +160,7 @@ const Loggin = () => {
           <p className="auth-helper">Complete reCAPTCHA to continue.</p>
         )}
         
+        <a href="#" className="forgot-pass-link">Forgot Password?</a>
         
         {authMessage && <p role="alert" className="auth-message">{authMessage}</p>}
 
