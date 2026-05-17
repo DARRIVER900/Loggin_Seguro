@@ -1,5 +1,6 @@
-import { useEffect, useState } from "react"; // 1. Importamos useState
-import SocialLogin from "./components/SocialLogin";
+import { useCallback, useEffect, useState } from "react"; // 1. Importamos useState
+import PasswordRequirements from "./components/auth/PasswordRequirements";
+import RecaptchaCheckbox from "./components/auth/RecaptchaCheckbox";
 import InputField from "./components/InputField";
 import { getSafeAuthErrorMessage } from "./utils/authErrors";
 import {
@@ -7,6 +8,7 @@ import {
   getLoginRateLimitStatus,
   recordLoginFailure,
 } from "./utils/authRateLimit";
+import { isStrongPassword } from "./utils/passwordValidation";
 
 
 import { auth, db } from './firebase/credenciales';
@@ -25,6 +27,22 @@ const Loggin = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [authMessage, setAuthMessage] = useState("");
   const [cooldownRemaining, setCooldownRemaining] = useState(0);
+  const [passwordValue, setPasswordValue] = useState("");
+  const [recaptchaToken, setRecaptchaToken] = useState("");
+  const [recaptchaResetKey, setRecaptchaResetKey] = useState(0);
+
+  const handleRecaptchaVerify = useCallback((token) => {
+    setRecaptchaToken(token);
+  }, []);
+
+  const handleRecaptchaExpire = useCallback(() => {
+    setRecaptchaToken("");
+  }, []);
+
+  const resetRecaptcha = () => {
+    setRecaptchaToken("");
+    setRecaptchaResetKey((currentKey) => currentKey + 1);
+  };
 
   useEffect(() => {
     if (cooldownRemaining <= 0) {
@@ -49,6 +67,16 @@ const Loggin = () => {
     const email = e.target.email.value.trim().toLowerCase();
     const password = e.target.password.value;
     const role = estaRegistrandose ? "user" : null;
+
+    if (!recaptchaToken) {
+      setAuthMessage("Completa la verificación reCAPTCHA antes de continuar.");
+      return;
+    }
+
+    if (estaRegistrandose && !isStrongPassword(password)) {
+      setAuthMessage("Tu contraseña aún no cumple todos los requisitos de seguridad.");
+      return;
+    }
 
     if (!estaRegistrandose) {
       const rateLimitStatus = getLoginRateLimitStatus(email);
@@ -83,6 +111,7 @@ const Loggin = () => {
       }
     } catch (error) {
       console.error("Error de autentificación", error.code || error.message);
+      resetRecaptcha();
 
       if (!estaRegistrandose) {
         const failureStatus = recordLoginFailure(email);
@@ -109,20 +138,42 @@ const Loggin = () => {
         {/* El selector de rol solo aparece si estaRegistrandose es verdadero. Si es falso, el componente simplemente no existe en la pantalla. */}
         {estaRegistrandose ? "Create your Account" : "Sign In "}
       </h2>
-      
-      <SocialLogin />
-      <p className="separator"><span>or</span></p>
-
       <form onSubmit={handleSubmit} className="loggin-form">
         {/* el id="email" e id="password" para que handleSubmit los encuentre */}
         <InputField id="email" type="email" placeholder="Email address" icon="mail"/>
-        <InputField id="password" type="password" placeholder="Password" icon="lock"/>
+        <InputField
+          id="password"
+          type="password"
+          placeholder="Password"
+          icon="lock"
+          onChange={(event) => setPasswordValue(event.target.value)}
+        />
+
+        {estaRegistrandose && <PasswordRequirements password={passwordValue} />}
+
+        <RecaptchaCheckbox
+          onVerify={handleRecaptchaVerify}
+          onExpire={handleRecaptchaExpire}
+          resetKey={recaptchaResetKey}
+        />
+        {!recaptchaToken && (
+          <p className="auth-helper">Complete reCAPTCHA to continue.</p>
+        )}
         
         <a href="#" className="forgot-pass-link">Forgot Password?</a>
         
         {authMessage && <p role="alert" className="auth-message">{authMessage}</p>}
 
-        <button type="submit" className="loggin-button" disabled={isSubmitting || cooldownRemaining > 0}>
+        <button
+          type="submit"
+          className="loggin-button"
+          disabled={
+            isSubmitting ||
+            cooldownRemaining > 0 ||
+            !recaptchaToken ||
+            (estaRegistrandose && !isStrongPassword(passwordValue))
+          }
+        >
           {cooldownRemaining > 0
             ? `Try again in ${cooldownRemaining}s`
             : isSubmitting
@@ -139,6 +190,7 @@ const Loggin = () => {
           setEstaRegistrandose(!estaRegistrandose);
           setAuthMessage("");
           setCooldownRemaining(0);
+          resetRecaptcha();
         }}>
           {estaRegistrandose ? "Login now" : "SignUp now"}
         </a>

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   getTrendingTracks,
   searchArtists,
@@ -12,21 +12,33 @@ export const useAudiusMusic = () => {
   const [query, setQuery] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const requestIdRef = useRef(0);
 
   const loadTrending = useCallback(async () => {
+    const requestId = requestIdRef.current + 1;
+    requestIdRef.current = requestId;
+
     setLoading(true);
     setError("");
+    setQuery("");
+    setArtists([]);
 
     try {
       const trendingTracks = await getTrendingTracks({ limit: 10 });
-      setTracks(trendingTracks);
-      setArtists([]);
-      setQuery("");
+
+      if (requestIdRef.current === requestId) {
+        setTracks(trendingTracks);
+      }
     } catch (audiusError) {
       console.error("Error cargando tendencias de Audius:", audiusError);
-      setError("No se pudieron cargar las canciones en tendencia.");
+
+      if (requestIdRef.current === requestId) {
+        setError("No se pudieron cargar las canciones en tendencia.");
+      }
     } finally {
-      setLoading(false);
+      if (requestIdRef.current === requestId) {
+        setLoading(false);
+      }
     }
   }, []);
 
@@ -38,6 +50,9 @@ export const useAudiusMusic = () => {
       return;
     }
 
+    const requestId = requestIdRef.current + 1;
+    requestIdRef.current = requestId;
+
     setLoading(true);
     setError("");
     setQuery(cleanQuery);
@@ -48,13 +63,20 @@ export const useAudiusMusic = () => {
         searchArtists(cleanQuery, { limit: 5 }),
       ]);
 
-      setTracks(trackResults);
-      setArtists(artistResults);
+      if (requestIdRef.current === requestId) {
+        setTracks(trackResults);
+        setArtists(artistResults);
+      }
     } catch (audiusError) {
       console.error("Error buscando en Audius:", audiusError);
-      setError("No se pudo completar la búsqueda musical.");
+
+      if (requestIdRef.current === requestId) {
+        setError("No se pudo completar la búsqueda musical.");
+      }
     } finally {
-      setLoading(false);
+      if (requestIdRef.current === requestId) {
+        setLoading(false);
+      }
     }
   }, [loadTrending]);
 

@@ -34,11 +34,11 @@ const MusicPage = () => {
       <div className="music-content-grid">
         <section className="music-main-panel" aria-labelledby="music-results-title">
         <h2 id="music-results-title" className="sr-only">Music results</h2>
-        {loading && <p role="status">Loading music from Audius...</p>}
+        {loading && <p role="status">Updating music from Audius...</p>}
         {error && <p role="alert">{error}</p>}
         {library.error && <p role="alert">{library.error}</p>}
 
-        {!loading && !error && (
+        {!error && (
           <>
             <ArtistList artists={artists} />
             <TrackList

@@ -34,70 +34,11 @@ body {
   padding: 2rem 1.5rem;
 }
 
-.loggin-container .social-loggin {
-  display: flex;
-  gap: 1.31 rem;
-}
-
 .loggin-container .form-title {
   text-align: center;
   font-size: 1.37rem;
   font-weight: 600;
   margin-bottom: 1.87rem;
-}
-
-
-.social-loggin .social-button {
-  display: flex;
-  width: 100%;
-  align-items: center;
-  border-radius: 0.31rem;
-  justify-content: center;
-  border: 1px solid #D5CBFF;
-  background: #F9F8FF;
-  gap: 0.81rem;
-  cursor: pointer;
-  font-size: 1rem;
-  font-weight: 500;
-  padding: 0.75rem 0;
-  transition: 0.3s ease;
-
-}
-
-.social-loggin .social-button:hover {
-  border-color: #7ac9c9;
-  background: #F9F8FF;
-}
-
-
-.social-loggin .social-button .social-icon {
-  width: 23px;
-
-}
-
-.loggin-container .separator {
-margin: 1.5rem 0;
-text-align: center;
-position: relative;
-}
-
-.loggin-container .separator span {
-  position: relative;
-  z-index: 1;
-  background: #fff;
-  padding: 0 0.9rem;
-  font-size: 1.06rem;
-  font-weight: 500;
-}
-
-.loggin-container .separator::after {
-position: absolute;
-content: "";
-left: 0;
-top: 50%;
-width: 100%;
-height: 1px;
-background: #bfb3f2;
 }
 
 .loggin-form .input-wrapper {
@@ -172,6 +113,55 @@ background: #bfb3f2;
   border-radius: 0.31rem;
   padding: 0.8rem;
   font-size: 0.95rem;
+}
+
+.auth-helper {
+  margin-top: 0.75rem;
+  color: #6f62a8;
+  font-size: 0.9rem;
+  text-align: center;
+}
+
+.password-requirements {
+  background: #f9f8ff;
+  border: 1px solid #bfb3f2;
+  border-radius: 0.31rem;
+  padding: 0.85rem;
+  margin-bottom: 1rem;
+  color: #333;
+}
+
+.password-requirements p {
+  margin-bottom: 0.5rem;
+}
+
+.password-requirements ul {
+  list-style: none;
+  display: grid;
+  gap: 0.35rem;
+}
+
+.password-requirements li {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  font-size: 0.9rem;
+}
+
+.requirement-valid {
+  color: #387373;
+  font-weight: 600;
+}
+
+.requirement-pending {
+  color: #666;
+}
+
+.recaptcha-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 1rem;
 }
 
 
@@ -823,6 +813,15 @@ width: 100%;
   .music-content-grid,
   .track-detail-card {
     grid-template-columns: 1fr;
+  }
+
+  .music-main-panel {
+    order: 1;
+    min-height: 420px;
+  }
+
+  .music-sidebar {
+    order: 2;
   }
 
   .music-search,
