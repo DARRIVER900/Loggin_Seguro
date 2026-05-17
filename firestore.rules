@@ -1,0 +1,116 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return signedIn() && request.auth.uid == userId;
+    }
+
+    function isAdmin() {
+      return signedIn()
+        && exists(/databases/$(database)/documents/usuarios/$(request.auth.uid))
+        && get(/databases/$(database)/documents/usuarios/$(request.auth.uid)).data.rol == "admin";
+    }
+
+    function isValidTrackSnapshot(data, userId) {
+      return data.keys().hasOnly([
+          "audiusTrackId",
+          "title",
+          "artistName",
+          "artistHandle",
+          "artwork",
+          "duration",
+          "streamUrl",
+          "ownerUid",
+          "addedAt",
+          "playedAt"
+        ])
+        && data.audiusTrackId is string
+        && data.audiusTrackId.size() > 0
+        && data.title is string
+        && data.title.size() > 0
+        && data.title.size() <= 120
+        && data.artistName is string
+        && data.artistName.size() > 0
+        && data.artistName.size() <= 120
+        && data.artistHandle is string
+        && data.artwork is string
+        && data.streamUrl is string
+        && data.duration is number
+        && data.duration >= 0
+        && data.ownerUid == userId;
+    }
+
+    match /usuarios/{userId} {
+      allow read: if isOwner(userId) || isAdmin();
+      allow create: if isOwner(userId)
+        && request.resource.data.keys().hasOnly(["correo", "rol", "fechaCreacion", "estado"])
+        && request.resource.data.rol == "user"
+        && request.resource.data.correo is string
+        && request.resource.data.correo.size() > 3
+        && request.resource.data.correo.size() <= 254
+        && request.resource.data.estado == "activo"
+        && request.resource.data.fechaCreacion == request.time;
+      allow update: if isOwner(userId)
+        && request.resource.data.keys().hasOnly(["correo", "rol", "fechaCreacion", "estado"])
+        && request.resource.data.rol == resource.data.rol
+        && request.resource.data.fechaCreacion == resource.data.fechaCreacion
+        && request.resource.data.correo == resource.data.correo
+        && request.resource.data.estado == resource.data.estado;
+      allow delete: if isAdmin();
+
+      match /favorites/{trackId} {
+        allow read, list: if isOwner(userId);
+        allow create, update: if isOwner(userId)
+          && trackId == request.resource.data.audiusTrackId
+          && request.resource.data.addedAt == request.time
+          && isValidTrackSnapshot(request.resource.data, userId);
+        allow delete: if isOwner(userId);
+      }
+
+      match /playlists/{playlistId} {
+        allow read, list, delete: if isOwner(userId);
+        allow create: if isOwner(userId)
+          && request.resource.data.keys().hasOnly(["name", "ownerUid", "createdAt", "updatedAt"])
+          && request.resource.data.name is string
+          && request.resource.data.name.size() >= 3
+          && request.resource.data.name.size() <= 60
+          && request.resource.data.ownerUid == userId
+          && request.resource.data.createdAt == request.time
+          && request.resource.data.updatedAt == request.time;
+        allow update: if isOwner(userId)
+          && request.resource.data.keys().hasOnly(["name", "ownerUid", "createdAt", "updatedAt"])
+          && request.resource.data.ownerUid == userId
+          && request.resource.data.createdAt == resource.data.createdAt
+          && request.resource.data.updatedAt == request.time
+          && request.resource.data.name is string
+          && request.resource.data.name.size() >= 3
+          && request.resource.data.name.size() <= 60;
+
+        match /tracks/{trackId} {
+          allow read, list, delete: if isOwner(userId);
+          allow create, update: if isOwner(userId)
+            && trackId == request.resource.data.audiusTrackId
+            && request.resource.data.addedAt == request.time
+            && isValidTrackSnapshot(request.resource.data, userId);
+        }
+      }
+
+      match /history/{historyId} {
+        allow read, list, delete: if isOwner(userId);
+        allow create: if isOwner(userId)
+          && request.resource.data.playedAt == request.time
+          && isValidTrackSnapshot(request.resource.data, userId);
+        allow update: if false;
+      }
+    }
+
+    match /incidencias/{document=**} {
+      allow read, write: if isAdmin();
+    }
+  }
+}
