@@ -539,7 +539,7 @@ width: 100%;
   gap: 1rem;
 }
 
-.feature-card,
+
 .admin-stat-card,
 .admin-panel,
 .music-main-panel,
@@ -548,20 +548,25 @@ width: 100%;
   border-radius: 1rem;
   padding: 1.25rem;
   box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
-  display: flex;         /* Convierte la tarjeta en contenedor flexible */
-  flex-direction: column; /* Organiza el título y texto en columna */
-  height: 100%;
 }
 
 .feature-card {
+  background: #fff;
+  border-radius: 1rem;
+  padding: 1.25rem;
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+  
+  /* Aquí está la magia para que no queden chuecas */
   display: flex;
   flex-direction: column;
-  justify-content: flex-start; /* Alinea todo el contenido hacia arriba */
-  min-height: 200px;           /* Le da la misma altura fija a todas las tarjetas */
+  justify-content: flex-start;
+  height: 100%; /* Hereda el alto estirado por el .feature-grid */          /* Le da la misma altura fija a todas las tarjetas */
 }
 
 .feature-card p {
-  margin-top: 0.5rem;          /* Separa tantito el texto del título */
+  color: #333;
+  margin-top: 0.5rem;
+  margin-bottom: 0;
 }
 
 .feature-card h3,
