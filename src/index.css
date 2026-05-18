@@ -544,6 +544,17 @@ width: 100%;
   box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
 }
 
+.feature-card {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start; /* Alinea todo el contenido hacia arriba */
+  min-height: 200px;           /* Le da la misma altura fija a todas las tarjetas */
+}
+
+.feature-card p {
+  margin-top: 0.5rem;          /* Separa tantito el texto del título */
+}
+
 .feature-card h3,
 .section-heading h2 {
   color: #2c3e50;
