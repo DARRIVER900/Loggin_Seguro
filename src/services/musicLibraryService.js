@@ -28,7 +28,6 @@ export const getFavorites = async (uid) => {
 
   const favoritesQuery = query(
     userCollection(uid, "favorites"),
-    orderBy("addedAt", "desc"),
   );
   const snapshot = await getDocs(favoritesQuery);
 
@@ -64,7 +63,6 @@ export const getPlaylists = async (uid) => {
 
   const playlistsQuery = query(
     userCollection(uid, "playlists"),
-    orderBy("updatedAt", "desc"),
   );
   const snapshot = await getDocs(playlistsQuery);
 
